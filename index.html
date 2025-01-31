@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>普通集運運費查詢</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-container input, .form-container button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-container button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f1f1f1;
+            display: none;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .info {
+            font-size: 14px;
+            color: #555;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>📦普通集運運費查詢</h2>
+    <p>請輸入包裹尺寸（長×寬×高）及重量（公斤），系統自動計算運費</p>
+
+    <label>長 (cm)：</label>
+    <input type="number" id="length" placeholder="輸入長度">
+    <label>寬 (cm)：</label>
+    <input type="number" id="width" placeholder="輸入寬度">
+    <label>高 (cm)：</label>
+    <input type="number" id="height" placeholder="輸入高度">
+    
+    <label>重量 (kg)：</label>
+    <input type="number" id="weight" placeholder="輸入公斤數" min="0.5" step="0.5">
+
+    <h3>📍 澳洲境內配送</h3>
+    <p>請輸入您的 **郵遞區號** (必填) 來查詢本地配送運費：</p>
+    <input type="text" id="zipcode" placeholder="輸入郵遞區號">
+    <button onclick="calculateShipping()">查詢運費</button>
+
+    <div class="result" id="result"></div>
+
+    <!-- 🚀 重要說明區塊 -->
+    <div class="info">
+        <h3>📌 費用計算方式：</h3>
+        <ul>
+            <li>台灣到澳洲運費：包裹的重量和材積重量（長×寬×高 ÷ 5000）取較大值。</li>
+            <li>澳洲配送費：根據郵遞區號查詢當地配送費。</li>
+            <li>加值服務費（如有）：例如拍照驗貨、加固包裝等額外需求。</li>
+        </ul>
+        <p><strong>總費用 = 台灣空運費 (AUD) + 澳洲配送費 (AUD) + 加值服務費</strong></p>
+
+        <h3>🚨 重要提醒：</h3>
+        <ul>
+            <li>若單一包裹重量或材積換算後超過 20 公斤，請聯繫客服。</li>
+            <li>普通集運 航班一個月一次( 6-12個工作日到達 )。</li>
+            <li>僅支持整數或 0.5 公斤單位，其他數字會自動進位。</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    let shippingData = {};
+    let australiaShippingData = [];
+
+    // 📌 DHL 運費 JSON 位置
+    const shippingUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/new_shipping_rates.json";
+    
+    // 📌 澳洲境內運費 JSON 位置 (以 AUD 計價)
+    const australiaShippingUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/destination_shipping_zones.json";
+
+    // 讀取 DHL 運費數據
+    fetch(shippingUrl)
+        .then(response => response.json())
+        .then(data => {
+            shippingData = data;
+        })
+        .catch(error => {
+            console.error("❌ 無法載入 DHL 運費數據:", error);
+        });
+
+    // 讀取 澳洲本地配送運費數據
+    fetch(australiaShippingUrl)
+        .then(response => response.json())
+        .then(data => {
+            australiaShippingData = data;
+        })
+        .catch(error => {
+            console.error("❌ 無法載入澳洲運費數據:", error);
+        });
+
+    function roundUp(weight) {
+        return Math.ceil(weight * 2) / 2;
+    }
+
+    function calculateShipping() {
+        const length = parseFloat(document.getElementById("length").value) || 0;
+        const width = parseFloat(document.getElementById("width").value) || 0;
+        const height = parseFloat(document.getElementById("height").value) || 0;
+        const weight = parseFloat(document.getElementById("weight").value) || 0;
+        const zipcode = document.getElementById("zipcode").value.trim();
+
+        if (!zipcode) {
+            document.getElementById("result").innerHTML = "<p class='error'>⚠️ 請輸入郵遞區號！</p>";
+            document.getElementById("result").style.display = "block";
+            return;
+        }
+
+        let volumeWeight = (length * width * height) / 5000;
+        let finalWeight = roundUp(Math.max(volumeWeight, weight));
+
+        if (finalWeight > 20) {
+            document.getElementById("result").innerHTML = "<p class='error'>⚠️ 超出 20 公斤，請聯繫客服！</p>";
+            document.getElementById("result").style.display = "block";
+            return;
+        }
+
+        let dhlCost = shippingData[finalWeight] ? shippingData[finalWeight].AUD : 0;
+        let australiaCost = 0;
+
+        for (let region of australiaShippingData) {
+            let postalRanges = region["地區"].split(",").map(r => r.trim());
+            for (let range of postalRanges) {
+                let [start, end] = range.includes("-") ? range.split("-").map(Number) : [parseInt(range), parseInt(range)];
+                if (zipcode >= start && zipcode <= end) {
+                    australiaCost = region["運費_AUD"];
+                    break;
+                }
+            }
+        }
+
+        document.getElementById("result").innerHTML = `
+            <p>💰 普通集運運費 (AUD)：${dhlCost.toFixed(2)}</p>
+            <p>🚚 澳洲配送費 (AUD)：${australiaCost.toFixed(2)}</p>
+            <p>🔹 <strong>總費用 (AUD)：${(dhlCost + australiaCost).toFixed(2)}</strong></p>
+        `;
+        document.getElementById("result").style.display = "block";
+    }
+</script>
+
+</body>
+</html>
