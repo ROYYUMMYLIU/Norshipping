@@ -78,7 +78,6 @@
 
     <div class="result" id="result"></div>
 
-    <!-- 🚀 重要說明區塊 -->
     <div class="info">
         <h3>📌 費用計算方式：</h3>
         <ul>
@@ -101,31 +100,24 @@
     let shippingRatesData = {};
     let destinationShippingZonesData = [];
 
-    // 📌 運費 JSON 位置
-    const shippingRatesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/new_shipping_rates.json";
-    
-    // 📌 澳洲境內運費 JSON 位置 (以 AUD 計價)
-    const destinationShippingZonesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/destination_shipping_zones.json";
+    const shippingRatesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/main/new_shipping_rates.json";
+    const destinationShippingZonesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/main/destination_shipping_fees_with_zones.json";
 
-    // 讀取 普通集運運費數據
     fetch(shippingRatesUrl)
         .then(response => response.json())
         .then(data => {
+            console.log("✅ 成功加載普通集運運費 JSON:", data);
             shippingRatesData = data;
         })
-        .catch(error => {
-            console.error("❌ 無法載入普通集運運費數據:", error);
-        });
+        .catch(error => console.error("❌ 無法載入普通集運運費數據:", error));
 
-    // 讀取 澳洲本地配送運費數據
     fetch(destinationShippingZonesUrl)
         .then(response => response.json())
         .then(data => {
+            console.log("✅ 成功加載澳洲運費 JSON:", data);
             destinationShippingZonesData = data;
         })
-        .catch(error => {
-            console.error("❌ 無法載入澳洲運費數據:", error);
-        });
+        .catch(error => console.error("❌ 無法載入澳洲運費數據:", error));
 
     function roundUp(weight) {
         return Math.ceil(weight * 2) / 2;
@@ -147,21 +139,16 @@
         let volumeWeight = (length * width * height) / 5000;
         let finalWeight = roundUp(Math.max(volumeWeight, weight));
 
-        if (finalWeight > 20) {
-            document.getElementById("result").innerHTML = "<p class='error'>⚠️ 超出 20 公斤，請聯繫客服！</p>";
-            document.getElementById("result").style.display = "block";
-            return;
-        }
+        let weightKey = finalWeight.toFixed(1);
+        let shippingCost = shippingRatesData[weightKey] ? shippingRatesData[weightKey].AUD : 0;
 
-        let shippingCost = shippingRatesData[finalWeight] ? shippingRatesData[finalWeight].AUD : 0;
         let australiaCost = 0;
-
         for (let region of destinationShippingZonesData) {
             let postalRanges = region["地區"].split(",").map(r => r.trim());
             for (let range of postalRanges) {
                 let [start, end] = range.includes("-") ? range.split("-").map(Number) : [parseInt(range), parseInt(range)];
                 if (zipcode >= start && zipcode <= end) {
-                    australiaCost = region["運費_AUD"];
+                    australiaCost = parseFloat(region["運費_AUD"]);
                     break;
                 }
             }
