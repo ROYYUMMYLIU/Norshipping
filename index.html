@@ -101,27 +101,27 @@
     let shippingData = {};
     let australiaShippingData = [];
 
-    // 📌 DHL 運費 JSON 位置
-    const shippingUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/new_shipping_rates.json";
+    // 📌 運費 JSON 位置
+    const newshippingratesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/new_shipping_rates.json";
     
     // 📌 澳洲境內運費 JSON 位置 (以 AUD 計價)
-    const australiaShippingUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/destination_shipping_zones.json";
+    const destinationshippingzonesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/destination_shipping_zones.json";
 
-    // 讀取 DHL 運費數據
-    fetch(shippingUrl)
+    // 讀取  運費數據
+    fetch(newshippingratesUrl)
         .then(response => response.json())
         .then(data => {
-            shippingData = data;
+            newshippingratesUrlData = data;
         })
         .catch(error => {
             console.error("❌ 無法載入 DHL 運費數據:", error);
         });
 
     // 讀取 澳洲本地配送運費數據
-    fetch(australiaShippingUrl)
+    fetch(destinationshippingzonesUrl)
         .then(response => response.json())
         .then(data => {
-            australiaShippingData = data;
+            destinationshippingzonesData = data;
         })
         .catch(error => {
             console.error("❌ 無法載入澳洲運費數據:", error);
@@ -153,10 +153,10 @@
             return;
         }
 
-        let dhlCost = shippingData[finalWeight] ? shippingData[finalWeight].AUD : 0;
+        let dhlCost = newshippingratesData[finalWeight] ? newshippingratesData[finalWeight].AUD : 0;
         let australiaCost = 0;
 
-        for (let region of australiaShippingData) {
+        for (let region of destinationshippingzonesData) {
             let postalRanges = region["地區"].split(",").map(r => r.trim());
             for (let range of postalRanges) {
                 let [start, end] = range.includes("-") ? range.split("-").map(Number) : [parseInt(range), parseInt(range)];
