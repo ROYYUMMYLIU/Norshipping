@@ -58,7 +58,7 @@
 <body>
 
 <div class="form-container">
-    <h2>📦普通集運運費查詢</h2>
+    <h2>📦 普通集運運費查詢</h2>
     <p>請輸入包裹尺寸（長×寬×高）及重量（公斤），系統自動計算運費</p>
 
     <label>長 (cm)：</label>
@@ -91,37 +91,37 @@
         <h3>🚨 重要提醒：</h3>
         <ul>
             <li>若單一包裹重量或材積換算後超過 20 公斤，請聯繫客服。</li>
-            <li>普通集運 航班一個月一次( 6-12個工作日到達 )。</li>
+            <li>普通集運 航班一個月一次 (6-12 個工作日到達)。</li>
             <li>僅支持整數或 0.5 公斤單位，其他數字會自動進位。</li>
         </ul>
     </div>
 </div>
 
 <script>
-    let shippingData = {};
-    let australiaShippingData = [];
+    let shippingRatesData = {};
+    let destinationShippingZonesData = [];
 
     // 📌 運費 JSON 位置
-    const newshippingratesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/new_shipping_rates.json";
+    const shippingRatesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/new_shipping_rates.json";
     
     // 📌 澳洲境內運費 JSON 位置 (以 AUD 計價)
-    const destinationshippingzonesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/destination_shipping_zones.json";
+    const destinationShippingZonesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/destination_shipping_fees_with_zones.json";
 
-    // 讀取  運費數據
-    fetch(newshippingratesUrl)
+    // 讀取 普通集運運費數據
+    fetch(shippingRatesUrl)
         .then(response => response.json())
         .then(data => {
-            newshippingratesUrlData = data;
+            shippingRatesData = data;
         })
         .catch(error => {
-            console.error("❌ 無法載入 DHL 運費數據:", error);
+            console.error("❌ 無法載入普通集運運費數據:", error);
         });
 
     // 讀取 澳洲本地配送運費數據
-    fetch(destinationshippingzonesUrl)
+    fetch(destinationShippingZonesUrl)
         .then(response => response.json())
         .then(data => {
-            destinationshippingzonesData = data;
+            destinationShippingZonesData = data;
         })
         .catch(error => {
             console.error("❌ 無法載入澳洲運費數據:", error);
@@ -153,10 +153,10 @@
             return;
         }
 
-        let dhlCost = newshippingratesData[finalWeight] ? newshippingratesData[finalWeight].AUD : 0;
+        let shippingCost = shippingRatesData[finalWeight] ? shippingRatesData[finalWeight].AUD : 0;
         let australiaCost = 0;
 
-        for (let region of destinationshippingzonesData) {
+        for (let region of destinationShippingZonesData) {
             let postalRanges = region["地區"].split(",").map(r => r.trim());
             for (let range of postalRanges) {
                 let [start, end] = range.includes("-") ? range.split("-").map(Number) : [parseInt(range), parseInt(range)];
@@ -168,9 +168,9 @@
         }
 
         document.getElementById("result").innerHTML = `
-            <p>💰 普通集運運費 (AUD)：${dhlCost.toFixed(2)}</p>
+            <p>💰 普通集運運費 (AUD)：${shippingCost.toFixed(2)}</p>
             <p>🚚 澳洲配送費 (AUD)：${australiaCost.toFixed(2)}</p>
-            <p>🔹 <strong>總費用 (AUD)：${(dhlCost + australiaCost).toFixed(2)}</strong></p>
+            <p>🔹 <strong>總費用 (AUD)：${(shippingCost + australiaCost).toFixed(2)}</strong></p>
         `;
         document.getElementById("result").style.display = "block";
     }
