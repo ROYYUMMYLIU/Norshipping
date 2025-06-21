@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>普通集運運費查詢</title>
+    <title>普通EMS運費查詢</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@
 <body>
 
 <div class="form-container">
-    <h2>📦 普通集運運費查詢</h2>
+    <h2>📦 普通EMS運費查詢</h2>
     <p>請輸入包裹尺寸（長×寬×高）及重量（公斤），系統自動計算運費</p>
 
     <label>長 (cm)：</label>
@@ -83,15 +83,18 @@
         <h3>📌 費用計算方式：</h3>
         <ul>
             <li>台灣到澳洲運費：包裹的重量和材積重量（長×寬×高 ÷ 5000）取較大值。</li>
+            <li>a. 計費重量會對比每個包裹的實際重量和體積重，取二者的最大值
+例如:包裹的實際重量是3.1kg，體積重是2.1kg，那麼這個包裹的計費重量就是3.1kg，以500g進位就是3.5kg</li>
             <li>澳洲配送費：根據郵遞區號查詢當地配送費。</li>
             <li>加值服務費（如有）：例如拍照驗貨、加固包裝等額外需求。</li>
+            <li>單件實際重量不超過20kg，最長邊不超過105cm，兩短邊和不超過150cm</li>
         </ul>
         <p><strong>總費用 = 台灣空運費 (AUD) + 澳洲配送費 (AUD) + 加值服務費</strong></p>
-
+        <p><strong>若使用台幣付款 匯率 1:19 TWD </strong></p>
         <h3>🚨 重要提醒：</h3>
         <ul>
             <li>若單一包裹重量或材積換算後超過 20 公斤，請聯繫客服。</li>
-            <li>普通集運 航班一個月一次 (6-12 個工作日到達)。</li>
+            <li>普通EMS集運 航班一個月一次 (6-12 個工作日到達)。</li>
             <li>僅支持整數或 0.5 公斤單位，其他數字會自動進位。</li>
         </ul>
     </div>
