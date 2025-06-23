@@ -71,9 +71,6 @@
     <label>重量 (kg)：</label>
     <input type="number" id="weight" placeholder="輸入公斤數" min="0.5" step="0.5">
 
-    <h3>📍 澳洲境內配送</h3>
-    <p>請輸入您的 **郵遞區號** (必填) 來查詢本地配送運費：</p>
-    <input type="text" id="zipcode" placeholder="輸入郵遞區號">
     <button onclick="calculateShipping()">查詢運費</button>
 
     <div class="result" id="result"></div>
@@ -85,11 +82,10 @@
             <li>台灣到澳洲運費：包裹的重量和材積重量（長×寬×高 ÷ 5000）取較大值。</li>
             <li>a. 計費重量會對比每個包裹的實際重量和體積重，取二者的最大值
 例如:包裹的實際重量是3.1kg，體積重是2.1kg，那麼這個包裹的計費重量就是3.1kg，以500g進位就是3.5kg</li>
-            <li>澳洲配送費：根據郵遞區號查詢當地配送費。</li>
             <li>加值服務費（如有）：例如拍照驗貨、加固包裝等額外需求。</li>
             <li>單件實際重量不超過20kg，最長邊不超過105cm，兩短邊和不超過150cm</li>
         </ul>
-        <p><strong>總費用 = 台灣空運費 (AUD) + 澳洲配送費 (AUD) + 加值服務費</strong></p>
+        <p><strong>總費用 = 台灣空運費 (AUD) + 加值服務費</strong></p>
         <p><strong>若使用台幣付款 匯率 1:19 TWD </strong></p>
         <h3>🚨 重要提醒：</h3>
         <ul>
@@ -102,34 +98,19 @@
 
 <script>
     let shippingRatesData = {};
-    let destinationShippingZonesData = [];
 
     // 📌 運費 JSON 位置
     const shippingRatesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/new_shipping_rates.json";
-    
-    // 📌 澳洲境內運費 JSON 位置 (以 AUD 計價)
-    const destinationShippingZonesUrl = "https://raw.githubusercontent.com/ROYYUMMYLIU/Norshipping/refs/heads/main/destination_shipping_zones.json";
 
     // 讀取 普通集運運費數據
     fetch(shippingRatesUrl)
         .then(response => response.json())
         .then(data => {
             shippingRatesData = data;
-            console.log("✅ 成功加載普通集運運費 JSON:", data);
+            console.log("✅ 成功加載普通集運費 JSON:", data);
         })
-        .catch(error => {
-            console.error("❌ 無法載入普通集運運費數據:", error);
-        });
-
-    // 讀取 澳洲本地配送運費數據
-    fetch(destinationShippingZonesUrl)
-        .then(response => response.json())
-        .then(data => {
-            destinationShippingZonesData = data;
-            console.log("✅ 成功加載澳洲運費 JSON:", data);
-        })
-        .catch(error => {
-            console.error("❌ 無法載入澳洲運費數據:", error);
+        .catchError(error => {
+            console.error("❌ 無法載入普通集運費數據:", error);
         });
 
     function roundUp(weight) {
@@ -141,10 +122,9 @@
         const width = parseFloat(document.getElementById("width").value) || 0;
         const height = parseFloat(document.getElementById("height").value) || 0;
         const weight = parseFloat(document.getElementById("weight").value) || 0;
-        const zipcode = document.getElementById("zipcode").value.trim();
 
-        if (!zipcode) {
-            document.getElementById("result").innerHTML = "<p class='error'>⚠️ 請輸入郵遞區號！</p>";
+        if (!weight || !length || !width || !height) {
+            document.getElementById("result").innerHTML = "<p class='error'>⚠️ 請輸入所有必填欄位！</p>";
             document.getElementById("result").style.display = "block";
             return;
         }
@@ -153,28 +133,12 @@
         let finalWeight = roundUp(Math.max(volumeWeight, weight));
         let weightKey = finalWeight.toFixed(1);
 
-        console.log("🔍 計算出的最終重量:", finalWeight);
-        console.log("📌 查詢的運費 JSON:", shippingRatesData);
-
+        console.log("🔍 選擇的最終重量:", finalWeight);
         let shippingCost = shippingRatesData[weightKey] ? shippingRatesData[weightKey].AUD : 0;
-        let australiaCost = 0;
-
-        for (let region of destinationShippingZonesData) {
-            let postalRanges = region["地區"].split(",").map(r => r.trim());
-            for (let range of postalRanges) {
-                let [start, end] = range.includes("-") ? range.split("-").map(Number) : [parseInt(range), parseInt(range)];
-                if (zipcode >= start && zipcode <= end) {
-                    australiaCost = parseFloat(region["運費_AUD"]);
-                    console.log("✅ 找到對應的郵遞區號:", region["地區名稱"], "運費:", australiaCost);
-                    break;
-                }
-            }
-        }
 
         document.getElementById("result").innerHTML = `
-            <p>💰 普通集運運費 (AUD)：${shippingCost.toFixed(2)}</p>
-            <p>🚚 澳洲配送費 (AUD)：${australiaCost.toFixed(2)}</p>
-            <p>🔹 <strong>總費用 (AUD)：${(shippingCost + australiaCost).toFixed(2)}</strong></p>
+            <p>💰 普通EMS運費 (AUD）：${shippingCost.toFixed(2)}</p>
+            <p>🔍 <strong>Total總費用 (AUD): ${shippingCost.toFixed(2)}</strong></p>
         `;
         document.getElementById("result").style.display = "block";
     }
