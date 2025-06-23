@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>普通EMS運費查詢</title>
+    <title>普通EMS集運費查詢</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@
 <body>
 
 <div class="form-container">
-    <h2>📦 普通EMS運費查詢</h2>
+    <h2>📦 普通EMS集運費查詢</h2>
     <p>請輸入包裹尺寸（長×寬×高）及重量（公斤），系統自動計算運費</p>
 
     <label>長 (cm)：</label>
@@ -71,9 +71,7 @@
     <label>重量 (kg)：</label>
     <input type="number" id="weight" placeholder="輸入公斤數" min="0.5" step="0.5">
 
-    <h3>📍 澳洲境內配送</h3>
-    <p>請輸入您的 **郵遞區號** (必填) 來查詢本地配送運費：</p>
-    <input type="text" id="zipcode" placeholder="輸入郵遞區號">
+
     <button onclick="calculateShipping()">查詢運費</button>
 
     <div class="result" id="result"></div>
@@ -89,7 +87,7 @@
             <li>加值服務費（如有）：例如拍照驗貨、加固包裝等額外需求。</li>
             <li>單件實際重量不超過20kg，最長邊不超過105cm，兩短邊和不超過150cm</li>
         </ul>
-        <p><strong>總費用 = 台灣空運費 (AUD) + 澳洲配送費 (AUD) + 加值服務費</strong></p>
+        <p><strong>總費用 = 台灣空運費 (AUD) + 加值服務費</strong></p>
         <p><strong>若使用台幣付款 匯率 1:19 TWD </strong></p>
         <h3>🚨 重要提醒：</h3>
         <ul>
@@ -172,8 +170,7 @@
         }
 
         document.getElementById("result").innerHTML = `
-            <p>💰 普通集運運費 (AUD)：${shippingCost.toFixed(2)}</p>
-            <p>🚚 澳洲配送費 (AUD)：${australiaCost.toFixed(2)}</p>
+            <p>💰 普通集運費 (AUD)：${shippingCost.toFixed(2)}</p>
             <p>🔹 <strong>總費用 (AUD)：${(shippingCost + australiaCost).toFixed(2)}</strong></p>
         `;
         document.getElementById("result").style.display = "block";
